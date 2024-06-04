@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CSV Filter</title>
+  <link rel="stylesheet" href="GEDS_extractor.css">
+</head>
+<body>
+  <h1>CSV Filter</h1>
+  <input type="file" id="csvFile" accept=".csv">
+  <input type="text" id="searchInput" placeholder="Search titles...">
+  <select id="filterInput" multiple></select>
+  <button id="filterButton">Filter</button>
+  <a id="downloadLink" download="filtered.csv" style="display: none;">Download Filtered CSV</a>
+  <script src="./GEDS_extractor.js"></script>
+</body>
+</html>
