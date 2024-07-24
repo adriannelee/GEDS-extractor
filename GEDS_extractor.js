@@ -1,7 +1,8 @@
 const csvFile = document.getElementById('csvFile');
 const searchInput = document.getElementById('searchInput');
+const excludeInput = document.getElementById('excludeInput');
 const filterInput = document.getElementById('filterInput');
-const filterButton = document.getElementById('filterButton');
+const downloadButton = document.getElementById('downloadButton');
 const downloadLink = document.getElementById('downloadLink');
 
 csvFile.addEventListener('change', () => {
@@ -33,11 +34,11 @@ csvFile.addEventListener('change', () => {
     for (let i = 1; i < rows.length; i++) {
       const cells = rows[i].split(',');
       if (cells.length > titleIndex) {
-        const title = cells[titleIndex] ? cells[titleIndex].trim().replaceAll('"',"") : '';
+        const title = cells[titleIndex] ? cells[titleIndex].trim().replaceAll('"', "") : '';
         uniqueTitles.add(title);
       }
     }
-    uniqueTitles=Array.from(uniqueTitles).sort()
+    uniqueTitles = Array.from(uniqueTitles).sort()
 
     // Add options to the select element
     const options = Array.from(uniqueTitles).map(title => {
@@ -53,19 +54,49 @@ csvFile.addEventListener('change', () => {
       const searchValue = searchInput.value.trim().toLowerCase();
       options.forEach(option => {
         const optionText = option.text.toLowerCase();
-        if (optionText.includes(searchValue)) {
-          option.style.display = 'block';
+        const shouldHide = !optionText.includes(searchValue);
+        if (shouldHide) {
+          option.dataset.include = 'false';
         } else {
-          option.style.display = 'none';
+          option.dataset.include = 'true';
         }
       });
+      handleShowHide(options)
+    });
+
+    // Exclude options based on exclude input
+    excludeInput.addEventListener('input', () => {
+      const searchValue = excludeInput.value.trim().toLowerCase();
+      options.filter((op) => op.dataset.include === "true").forEach(option => {
+        const optionText = option.text.toLowerCase();
+        const shouldHide = optionText.includes(searchValue);
+        if (searchValue.length > 0 && shouldHide) {
+          option.dataset.exclude = 'true';
+        } else {
+          option.dataset.exclude = 'false';
+        }
+      });
+      handleShowHide(options)
     });
   };
+
 
   reader.readAsText(file);
 });
 
-filterButton.addEventListener('click', () => {
+function handleShowHide(options) {
+  // handle the show/hide of the elements
+  options.forEach(option => {
+    const shouldHide = option.dataset.exclude === 'true' || option.dataset.include === 'false';
+    if (shouldHide) {
+      option.style.display = 'none';
+    } else {
+      option.style.display = 'block';
+    }
+  });
+}
+
+downloadButton.addEventListener('click', () => {
   const files = csvFile.files;
   if (files.length === 0) {
     alert('Please select a CSV file first.');
@@ -93,7 +124,7 @@ filterButton.addEventListener('click', () => {
     const filteredRows = rows.filter((row, index) => {
       if (index === 0) return true; // Keep header row
       const cells = row.split('",');
-      const title = cells[titleIndex] ? cells[titleIndex].trim().toLowerCase().replaceAll('"',"") : '';
+      const title = cells[titleIndex] ? cells[titleIndex].trim().toLowerCase().replaceAll('"', "") : '';
 
       // filter if the title.... includes ANY ONE of the selected options
       return filterValues.some(filterValue => title === filterValue);
