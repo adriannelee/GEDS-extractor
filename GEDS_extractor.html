@@ -11,7 +11,10 @@
   <input type="file" id="csvFile" accept=".csv">
   <input type="text" id="searchInput" placeholder="Includes keywords...">
   <input type="text" id="excludeInput" placeholder="Excludes keywords...">
-  <select id="filterInput" multiple></select>
+  <select id="filterInput" multiple>
+    <option value="1" data-include="true">Option 1</option>
+    <option value="2" data-include="true">Option 2</option>
+  </select>
   <button id="downloadButton">Download</button>
   <a id="downloadLink" download="filtered.csv" style="display: none;">Download Filtered CSV</a>
   <script src="./GEDS_extractor.js"></script>
