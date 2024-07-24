@@ -63,10 +63,11 @@ document.addEventListener("DOMContentLoaded", function () {
   searchInput.addEventListener('input', () => {
     // if we already populated the options after loading the file, use those, else use the ones on the page
     const opts = options.length > 0 ? options : Array.from(filterInput.options);
-    const searchValue = searchInput.value.trim().toLowerCase();
+    const searchTerms = searchInput.value.split(',').map(term => term.trim().toLowerCase()).filter(term => term !== '');
+
     opts.forEach(option => {
       const optionText = option.text.toLowerCase();
-      const shouldHide = !optionText.includes(searchValue);
+      const shouldHide = !searchTerms.some(term => optionText.includes(term));
       if (shouldHide) {
         option.dataset.include = 'false';
       } else {
@@ -80,11 +81,14 @@ document.addEventListener("DOMContentLoaded", function () {
   excludeInput.addEventListener('input', () => {
     // if we already populated the options after loading the file, use those, else use the ones on the page
     const opts = options.length > 0 ? options : Array.from(filterInput.options);
-    const searchValue = excludeInput.value.trim().toLowerCase();
-    opts.filter((op) => op.dataset.include === "true").forEach(option => {
+    const filteredOptions = opts.filter((op) => op.dataset.include === "true");
+
+    const searchTerms = excludeInput.value.split(',').map(term => term.trim().toLowerCase()).filter(term => term !== '');
+
+    filteredOptions.forEach(option => {
       const optionText = option.text.toLowerCase();
-      const shouldHide = optionText.includes(searchValue);
-      if (searchValue.length > 0 && shouldHide) {
+      const shouldHide = searchTerms.some(term => optionText.includes(term));
+      if (searchTerms.length > 0 && shouldHide) {
         option.dataset.exclude = 'true';
       } else {
         option.dataset.exclude = 'false';
@@ -92,6 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     handleShowHide(opts)
   });
+
   function handleShowHide(options) {
     // handle the show/hide of the elements
     options.forEach(option => {
