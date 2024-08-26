@@ -1,64 +1,130 @@
 document.addEventListener("DOMContentLoaded", function () {
 
   const csvFile = document.getElementById('csvFile');
+  console.log("🚀 ~ csvFile:", csvFile)
+  console.dir(csvFile)
   const searchInput = document.getElementById('searchInput');
   const excludeInput = document.getElementById('excludeInput');
   const filterInput = document.getElementById('filterInput');
   const downloadButton = document.getElementById('downloadButton');
   const downloadLink = document.getElementById('downloadLink');
   let options = [];
+   
+  
+  // Assuming the event is emitted on the document object
+  // document.addEventListener('gcdsChange', function (event, ...rest) {
+  //   // This function will be called when the 'gcdsFocus' event is emitted
+  //   console.log('gcdsInput event received!');
 
-  csvFile.addEventListener('change', () => {
-    const files = csvFile.files;
-    if (files.length === 0) {
-      alert('Please select a CSV file first.');
-      return;
-    }
+  //   // You can access any data passed with the event
+  //   console.log('Event details:', event.detail, rest, event);
+  //   const file = event.detail[0]
+  //   console.log("🚀 ~ document.addEventListener ~ file:", file)
 
-    const file = files[0];
-    const reader = new FileReader();
+  //   const reader = new FileReader();
 
-    reader.onload = () => {
-      const data = reader.result;
-      const rows = data.split('\n');
-      const headers = rows[0].split(',');
-      const titleIndex = headers.indexOf('Title (EN)');
+  //   reader.onload = () => {
+  //     const data = reader.result;
+  //     const rows = data.split('\n');
+  //     const headers = rows[0].split(',');
+  //     const titleIndex = headers.indexOf('Title (EN)');
 
-      if (titleIndex === -1) {
-        alert('The CSV file does not contain a "Title (EN)" column.');
-        return;
-      }
+  //     if (titleIndex === -1) {
+  //       alert('The CSV file does not contain a "Title (EN)" column.');
+  //       return;
+  //     }
 
-      // Clear existing options
-      filterInput.innerHTML = '';
+  //     // Clear existing options
+  //     filterInput.innerHTML = '';
 
-      // Get unique values from "Title (EN)" column
-      let uniqueTitles = new Set();
-      for (let i = 1; i < rows.length; i++) {
-        const cells = rows[i].split(',');
-        if (cells.length > titleIndex) {
-          const title = cells[titleIndex] ? cells[titleIndex].trim().replaceAll('"', "") : '';
-          uniqueTitles.add(title);
-        }
-      }
-      uniqueTitles = Array.from(uniqueTitles).sort()
+  //     // Get unique values from "Title (EN)" column
+  //     let uniqueTitles = new Set();
+  //     for (let i = 1; i < rows.length; i++) {
+  //       const cells = rows[i].split(',');
+  //       if (cells.length > titleIndex) {
+  //         const title = cells[titleIndex] ? cells[titleIndex].trim().replaceAll('"', "") : '';
+  //         uniqueTitles.add(title);
+  //       }
+  //     }
+  //     uniqueTitles = Array.from(uniqueTitles).sort()
 
-      // Add options to the select element
-      options = Array.from(uniqueTitles).map(title => {
-        const option = document.createElement('option');
-        option.value = title;
-        option.text = title;
-        option.dataset.include = 'true'
-        return option;
-      });
-      options.forEach(option => filterInput.add(option));
+  //     // Add options to the select element
+  //     options = Array.from(uniqueTitles).map(title => {
+  //       const option = document.createElement('option');
+  //       option.value = title;
+  //       option.text = title;
+  //       option.dataset.include = 'true'
+  //       return option;
+  //     });
+  //     options.forEach(option => filterInput.add(option));
 
 
-    };
+  //   };
 
 
-    reader.readAsText(file);
-  });
+  //   reader.readAsText(file);
+  //   // Add your custom logic here
+  //   // For example:
+  //   // handleGcdsFocus(event.detail);
+  // });
+
+  // If you want to remove the event listener later
+  // const handleGcdsFocus = function(event) { ... };
+  // document.removeEventListener('gcdsFocus', handleGcdsFocus);
+
+  // csvFile.addEventListener('change', () => {
+  //   console.log("🚀 ~ csvFile:", csvFile)
+  //   console.dir(csvFile)
+  //   const files = csvFile.files;
+  //   if (files.length === 0) {
+  //     alert('Please select a CSV file first.');
+  //     return;
+  //   }
+
+  //   const file = files[0];
+  //   const reader = new FileReader();
+
+  //   reader.onload = () => {
+  //     const data = reader.result;
+  //     const rows = data.split('\n');
+  //     const headers = rows[0].split(',');
+  //     const titleIndex = headers.indexOf('Title (EN)');
+
+  //     if (titleIndex === -1) {
+  //       alert('The CSV file does not contain a "Title (EN)" column.');
+  //       return;
+  //     }
+
+  //     // Clear existing options
+  //     filterInput.innerHTML = '';
+
+  //     // Get unique values from "Title (EN)" column
+  //     let uniqueTitles = new Set();
+  //     for (let i = 1; i < rows.length; i++) {
+  //       const cells = rows[i].split(',');
+  //       if (cells.length > titleIndex) {
+  //         const title = cells[titleIndex] ? cells[titleIndex].trim().replaceAll('"', "") : '';
+  //         uniqueTitles.add(title);
+  //       }
+  //     }
+  //     uniqueTitles = Array.from(uniqueTitles).sort()
+
+  //     // Add options to the select element
+  //     options = Array.from(uniqueTitles).map(title => {
+  //       const option = document.createElement('option');
+  //       option.value = title;
+  //       option.text = title;
+  //       option.dataset.include = 'true'
+  //       return option;
+  //     });
+  //     options.forEach(option => filterInput.add(option));
+
+
+  //   };
+
+
+  //   reader.readAsText(file);
+  // });
   // Filter options based on search input
   searchInput.addEventListener('input', () => {
     // if we already populated the options after loading the file, use those, else use the ones on the page
@@ -143,10 +209,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return filterValues.some(filterValue => title === filterValue);
       });
 
+      // If there's already a download-link, remove it
+      downloadLink.href = null;
 
       const filteredData = filteredRows.join('\n');
       const blob = new Blob([filteredData], { type: 'text/csv;charset=utf-8' });
       downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.className = 'download-link';
       downloadLink.style.display = 'inline';
     };
 

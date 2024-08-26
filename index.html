@@ -2,22 +2,147 @@
 <html>
 
 <head>
-  <title>CSV Filter</title>
+  <title>GEDS CSV Filter</title>
   <link rel="stylesheet" href="GEDS_extractor.css">
+  <!-- Icons Font Awesome (to access icons, import Font Awesome) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    crossorigin="anonymous">
+
+  <!-- GC Design System -->
+  <link rel="stylesheet"
+    href="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-components@0.25.0/dist/gcds/gcds.css">
+  <script type="module"
+    src="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-components@0.25.0/dist/gcds/gcds.esm.js"></script>
+  <script nomodule
+    src="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-components@0.25.0/dist/gcds/gcds.js"></script>
+  <!-- GC Design System Utility -->
+  <link rel="stylesheet"
+    href="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-utility@latest/dist/gcds-utility.min.css">
 </head>
 
 <body>
-  <h1>CSV Filter</h1>
-  <input type="file" id="csvFile" accept=".csv">
-  <input type="text" id="searchInput" placeholder="Includes keywords...">
-  <input type="text" id="excludeInput" placeholder="Excludes keywords...">
-  <select id="filterInput" multiple>
-    <option value="1" data-include="true">Option 1</option>
-    <option value="2" data-include="true">Option 2</option>
-  </select>
-  <button id="downloadButton">Download</button>
-  <a id="downloadLink" download="filtered.csv" style="display: none;">Download Filtered CSV</a>
+  <gcds-container size="md" centered padding="400">
+    <gcds-heading tag="h1">Filter GEDS using job titles</gcds-heading></gcds-container>
+
+  <gcds-container size="md" centered padding="400">
+    <gcds-text>The <gcds-link href="https://geds-sage.gc.ca/en/GEDS/?pgid=002">Government of Canada Employee Contact
+        Information (GEDS)</gcds-link> is a messy and very large dataset. It can slow to filter through using Excel
+      (impossible if using Google Sheets). But it can be helpful for building government-to-government Platform products
+      because it's open and the largest dataset of job titles in the federal public service.</gcds-text>
+
+    <gcds-text>This tool allows you to quickly filter the <gcds-link
+        href="https://open.canada.ca/data/dataset/8ec4a9df-b76b-4a67-8f93-cdbc2e040098/resource/a1de6faa-cb68-4f47-aa57-efd46bd8f82b">GEDS
+        dataset</gcds-link> using the "Title (EN)" column. It will create a (hopefully smaller) CSV file with the
+      filtered results. </gcds-text>
+
+    <gcds-text text-role="secondary" size="caption">Disclaimer: The export seems to behave inconsistently. So this tool
+      may only be useful for quickly understanding the job titles and creating a rough filter list before taking those
+      search terms to another tool.</gcds-text>
+  </gcds-container>
+
+
+
+  <gcds-container size="md" centered padding="400">
+    <script>
+
+      function handleFormSubmit(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        console.log("🚀 ~ handleFormSubmit ~ formData:", formData)
+        const formDataObject = Object.fromEntries(formData);
+        console.log("🚀 ~ handleFormSubmit ~ formDataObject:", formDataObject)
+
+
+        const file = formDataObject["file-uploader"]
+        console.log("🚀 ~ handleFormSubmit ~ file:", file)
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          const data = reader.result;
+          const rows = data.split('\n');
+          const headers = rows[0].split(',');
+          const titleIndex = headers.indexOf('Title (EN)');
+
+          if (titleIndex === -1) {
+            alert('The CSV file does not contain a "Title (EN)" column.');
+            return;
+          }
+
+          // Clear existing options
+          filterInput.innerHTML = '';
+
+          // Get unique values from "Title (EN)" column
+          let uniqueTitles = new Set();
+          for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].split(',');
+            if (cells.length > titleIndex) {
+              const title = cells[titleIndex] ? cells[titleIndex].trim().replaceAll('"', "") : '';
+              uniqueTitles.add(title);
+            }
+          }
+          uniqueTitles = Array.from(uniqueTitles).sort()
+
+          // Add options to the select element
+          options = Array.from(uniqueTitles).map(title => {
+            const option = document.createElement('option');
+            option.value = title;
+            option.text = title;
+            option.dataset.include = 'true'
+            return option;
+          });
+          options.forEach(option => filterInput.add(option));
+
+
+        };
+
+
+        reader.readAsText(file);
+
+      }
+    </script>
+    <!-- ! not working yet, can't access the file -->
+    <form method="post" action="javascript:void(0)" id="myForm" onsubmit="handleFormSubmit(event)">
+
+
+      <gcds-file-uploader uploader-id="csvFile" label="Upload a CSV of GEDS" name="file-uploader"></gcds-file-uploader>
+      <gcds-button type="submit">Upload</gcds-button>
+    </form>
+  </gcds-container>
+
+  <gcds-container size="md" centered padding="400">
+    <gcds-input input-id="input-default" id="searchInput" label="Keyword(s) to include in the filter"
+      name="example-default" hint="Separate keywords using a comma. Can be partial keywords."></gcds-input>
+
+    <gcds-input input-id="input-default" id="excludeInput" label="Keyword(s) to exclude in the filter"
+      name="example-default" hint="Separate keywords using a comma. Can be partial keywords.">
+    </gcds-input>
+  </gcds-container>
+
+
+  <gcds-container size="md" centered padding="400">
+    <gcds-text>Select the job titles you would like to include in your export. Hold down Cmd (on Mac, Ctrl on PC) to
+      select multiple, or Cmd/Ctrl + a to select all in the list.</gcds-text>
+    <select id="filterInput" multiple>
+      <option value="1" data-include="true">Option 1</option>
+      <option value="2" data-include="true">Option 2</option>
+    </select>
+  </gcds-container>
+
+
+  <gcds-container size="md" centered padding="400">
+    <gcds-text>Click the button below to create a filtered CSV file of the job titles you selected.</gcds-text>
+    <gcds-button id="downloadButton">Create filtered file</gcds-button>
+    <gcds-button id="downloadLink" download="filtered.csv" style="display: none;">Download Filtered CSV</gcds-button>
+  </gcds-container>
+
+
+  <gcds-container size="md" centered padding="400"><gcds-date-modified>2024-08-23</gcds-date-modified> </gcds-container>
+
   <script src="./GEDS_extractor.js"></script>
+
+
 </body>
 
 </html>
